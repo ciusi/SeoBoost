@@ -4,7 +4,7 @@ const Audit = require('../models/Audit');
 const auth = require('../middleware/auth');
 const axios = require('axios');
 
-// Funzione per pulire le chiavi degli oggetti
+// Funzione per pulire le chiavi degli oggetti 
 const cleanKeys = (obj) => {
   if (typeof obj !== 'object' || obj === null) return obj;
   if (Array.isArray(obj)) return obj.map(cleanKeys);
@@ -15,7 +15,7 @@ const cleanKeys = (obj) => {
   }, {});
 };
 
-// Rotta per creare un nuovo audit (protetta)
+// Rotta per creare nuova audit (protetta)
 router.post('/', auth, async (req, res) => {
   let { url } = req.body;
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
