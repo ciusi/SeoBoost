@@ -22,8 +22,7 @@ require('./config/passport')(passport);
 // Rotte
 app.get('/', (req, res) => res.send('API is running...'));
 app.use('/api/audits', require('./routes/audit'));
-app.use('/api/users', require('./routes/users'));
-
+app.use('/api/users', require('./routes/user'));
 
 // Porta del server
 const PORT = process.env.PORT || 5000;

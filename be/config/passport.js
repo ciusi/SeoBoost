@@ -2,7 +2,7 @@ const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const mongoose = require('mongoose');
-const User = mongoose.model('User');
+const User = require('../models/User');  // Corretto il percorso di importazione
 const keys = require('./keys');  // Questo file contiene le chiavi segrete
 
 const opts = {};

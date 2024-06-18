@@ -9,7 +9,10 @@ const AuditSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  // Aggiungi altri campi necessari per l'audit
+  results: {
+    type: Object,
+    required: true
+  }
 });
 
 module.exports = mongoose.model('Audit', AuditSchema);
