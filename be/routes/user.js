@@ -7,7 +7,7 @@ const User = require('../models/User');
 const keys = require('../config/keys');
 
 // Registrazione utente
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
@@ -15,83 +15,53 @@ router.post('/register', (req, res) => {
     return res.status(400).json({ msg: 'Please enter all fields' });
   }
 
-  User.findOne({ email }).then(user => {
+  try {
+    let user = await User.findOne({ email });
     if (user) {
       console.error('Email already exists:', email);
       return res.status(400).json({ email: 'Email already exists' });
-    } else {
-      const newUser = new User({
-        name,
-        email,
-        password
-      });
-
-      bcrypt.genSalt(10, (err, salt) => {
-        if (err) {
-          console.error('Error generating salt:', err);
-          return res.status(500).json({ msg: 'Server error' });
-        }
-
-        bcrypt.hash(newUser.password, salt, (err, hash) => {
-          if (err) {
-            console.error('Error hashing password:', err);
-            return res.status(500).json({ msg: 'Server error' });
-          }
-
-          newUser.password = hash;
-          newUser
-            .save()
-            .then(user => res.json(user))
-            .catch(err => {
-              console.error('Error saving user:', err);
-              res.status(500).json({ msg: 'Server error' });
-            });
-        });
-      });
     }
-  }).catch(err => {
-    console.error('Error finding user:', err);
+
+    const newUser = new User({
+      name,
+      email,
+      password
+    });
+
+    const salt = await bcrypt.genSalt(10);
+    newUser.password = await bcrypt.hash(password, salt);
+    
+    user = await newUser.save();
+    res.json(user);
+  } catch (err) {
+    console.error('Server error:', err.message);
     res.status(500).json({ msg: 'Server error' });
-  });
+  }
 });
 
 // Login utente
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  User.findOne({ email }).then(user => {
+  try {
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ email: 'User not found' });
     }
 
-    bcrypt.compare(password, user.password).then(isMatch => {
-      if (isMatch) {
-        const payload = { id: user.id, name: user.name };
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ password: 'Password incorrect' });
+    }
 
-        jwt.sign(
-          payload,
-          keys.secretOrKey,
-          { expiresIn: 3600 },
-          (err, token) => {
-            if (err) {
-              console.error('Error signing token:', err);
-              return res.status(500).json({ msg: 'Server error' });
-            }
+    const payload = { id: user.id, name: user.name };
 
-            res.json({ success: true, token: 'Bearer ' + token });
-          }
-        );
-      } else {
-        return res.status(400).json({ password: 'Password incorrect' });
-      }
-    }).catch(err => {
-      console.error('Error comparing password:', err);
-      res.status(500).json({ msg: 'Server error' });
-    });
-  }).catch(err => {
-    console.error('Error finding user:', err);
+    const token = await jwt.sign(payload, keys.secretOrKey, { expiresIn: 3600 });
+    res.json({ success: true, token: 'Bearer ' + token });
+  } catch (err) {
+    console.error('Server error:', err.message);
     res.status(500).json({ msg: 'Server error' });
-  });
+  }
 });
 
 // Autenticazione con Google

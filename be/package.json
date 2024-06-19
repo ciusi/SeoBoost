@@ -1,7 +1,7 @@
 {
   "name": "seoboost",
   "version": "1.0.0",
-  "description": "SEO audit application",
+  "description": "SEO open source audit application",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -22,5 +22,6 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
+
   }
 }

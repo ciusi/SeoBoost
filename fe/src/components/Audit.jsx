@@ -1,44 +1,45 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+// components/Audit.jsx
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ReactJson from 'react-json-view';
 
 const Audit = () => {
-  const [url, setUrl] = useState('');
-  const [results, setResults] = useState(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [results, setResults] = useState(location.state?.results || null);
   const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('/api/audits', { url });
-      setResults(response.data.results); // Assuming `results` contains the audit data
-      setError(null);
-    } catch (err) {
-      setError('Error fetching audit results');
-      console.error('Error during audit request:', err.message);
+  useEffect(() => {
+    if (!results) {
+      setError('No results available');
     }
+  }, [results]);
+
+  const isLoggedIn = !!localStorage.getItem('token');
+
+  const handleRegister = () => {
+    navigate('/register');
   };
 
   return (
-    <div>
-      <h1>PageSpeed Audit</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="url">URL</label>
-          <input
-            type="text"
-            id="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-        </div>
-        <button type="submit">Run Audit</button>
-      </form>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {results && (
-        <div>
-          <h2>Results</h2>
-          <ReactJson src={results} />
+        <div className="bg-white p-6 rounded shadow-md w-full max-w-2xl">
+          <h2 className="text-2xl font-bold mb-4">Results</h2>
+          {isLoggedIn ? (
+            <ReactJson src={results} />
+          ) : (
+            <div>
+              <p>Partial results shown. Please register to see full results.</p>
+              <button
+                onClick={handleRegister}
+                className="bg-blue-500 text-white py-2 px-4 rounded mt-4"
+              >
+                Register
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
