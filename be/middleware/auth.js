@@ -1,4 +1,3 @@
-// middleware/auth.js
 const jwt = require('jsonwebtoken');
 const keys = require('../config/keys');
 
@@ -15,7 +14,10 @@ module.exports = function (req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
-    console.error('Token verification failed:', err);
+    console.error('Token verification failed:', err.message);
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ msg: 'Token expired' });
+    }
     res.status(401).json({ msg: 'Token is not valid' });
   }
 };

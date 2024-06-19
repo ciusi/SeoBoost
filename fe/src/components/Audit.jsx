@@ -1,47 +1,88 @@
-// components/Audit.jsx
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import ReactJson from 'react-json-view';
+import axios from 'axios';
+import Navbar from './Navbar';  // Assicurati di avere un componente Navbar
 
 const Audit = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [results, setResults] = useState(location.state?.results || null);
+  const [url, setUrl] = useState('');
+  const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    if (!results) {
-      setError('No results available');
+    setIsLoggedIn(!!localStorage.getItem('token'));
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!isLoggedIn) {
+      setError('Devi essere registrato per effettuare un audit.');
+      return;
     }
-  }, [results]);
+    try {
+      const response = await axios.post('http://localhost:5000/api/audits', { url }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setResults(response.data.lighthouseResult);
+      setError(null);
+    } catch (err) {
+      setError('Error fetching audit results');
+    }
+  };
 
-  const isLoggedIn = !!localStorage.getItem('token');
+  const renderResults = () => {
+    if (!results) return null;
 
-  const handleRegister = () => {
-    navigate('/register');
+    const { categories, audits } = results;
+
+    const coreWebVitals = [
+      { id: 'first-contentful-paint', title: 'First Contentful Paint' },
+      { id: 'speed-index', title: 'Speed Index' },
+      { id: 'largest-contentful-paint', title: 'Largest Contentful Paint' },
+      { id: 'interactive', title: 'Time to Interactive' },
+      { id: 'total-blocking-time', title: 'Total Blocking Time' },
+      { id: 'cumulative-layout-shift', title: 'Cumulative Layout Shift' }
+    ];
+
+    const renderMetric = (metric) => {
+      return (
+        <div key={metric.id} className="metric">
+          <strong>{metric.title}:</strong> {audits[metric.id].displayValue}
+        </div>
+      );
+    };
+
+    return (
+      <div className="results">
+        <h2>Results for {results.finalUrl}</h2>
+        <h3>Performance Score: {categories.performance.score * 100}</h3>
+        <h3>Core Web Vitals</h3>
+        {coreWebVitals.map(renderMetric)}
+      </div>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {results && (
-        <div className="bg-white p-6 rounded shadow-md w-full max-w-2xl">
-          <h2 className="text-2xl font-bold mb-4">Results</h2>
-          {isLoggedIn ? (
-            <ReactJson src={results} />
-          ) : (
-            <div>
-              <p>Partial results shown. Please register to see full results.</p>
-              <button
-                onClick={handleRegister}
-                className="bg-blue-500 text-white py-2 px-4 rounded mt-4"
-              >
-                Register
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+    <div className="audit-page">
+      <Navbar />
+      <div className="container">
+        <h1>PageSpeed Audit</h1>
+        <form onSubmit={handleSubmit} className="audit-form">
+          <div>
+            <label htmlFor="url">URL</label>
+            <input
+              type="text"
+              id="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+            />
+          </div>
+          <button type="submit">Run Audit</button>
+        </form>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {renderResults()}
+      </div>
     </div>
   );
 };

@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Audit = require('../models/Audit');
-const auth = require('../middleware/auth');
 const axios = require('axios');
+const { check, validationResult } = require('express-validator');
 
 // Funzione per pulire le chiavi degli oggetti 
 const cleanKeys = (obj) => {
@@ -15,40 +15,58 @@ const cleanKeys = (obj) => {
   }, {});
 };
 
-// Rotta per creare nuova audit (protetta)
-router.post('/', auth, async (req, res) => {
-  let { url } = req.body;
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    url = 'http://' + url;
+router.post(
+  '/',
+  [check('url', 'Please include a valid URL').isURL()],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    let { url } = req.body;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'http://' + url;
+    }
+    const apiKey = process.env.PAGESPEED_API_KEY;
+    const apiEndpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}`;
+
+    try {
+      console.log('Received URL:', url);
+      console.log('API Endpoint:', apiEndpoint);
+
+      const apiResponse = await axios.get(apiEndpoint);
+      console.log('API Response:', apiResponse.data);
+
+      const cleanedResults = cleanKeys(apiResponse.data);
+      console.log('Cleaned API Response:', cleanedResults);
+
+      const newAudit = new Audit({
+        url,
+        results: cleanedResults
+      });
+      const audit = await newAudit.save();
+
+      const token = req.header('Authorization');
+      if (!token) {
+        const partialResults = {
+          ...cleanedResults,
+          auditId: audit.id,
+          performance: cleanedResults.lighthouseResult.categories.performance.score,
+          partial: true
+        };
+        return res.json(partialResults);
+      } else {
+        return res.json(audit);
+      }
+    } catch (err) {
+      console.error('Error during API call:', err.message);
+      res.status(500).send('Server error');
+    }
   }
-  const apiKey = process.env.PAGESPEED_API_KEY;
-  const apiEndpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}`;
+);
 
-  try {
-    console.log('Received URL:', url);
-    console.log('API Endpoint:', apiEndpoint);
-
-    const apiResponse = await axios.get(apiEndpoint);
-    console.log('API Response:', apiResponse.data);
-
-    // Pulisce le chiavi della risposta
-    const cleanedResults = cleanKeys(apiResponse.data);
-    console.log('Cleaned API Response:', cleanedResults);
-
-    const newAudit = new Audit({
-      url,
-      results: cleanedResults
-    });
-    const audit = await newAudit.save();
-    res.json(audit);
-  } catch (err) {
-    console.error('Error during API call:', err.message);
-    res.status(500).send('Server error');
-  }
-});
-
-// Rotta per ottenere i risultati dell'audit (protetta)
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const audit = await Audit.findById(req.params.id);
     if (!audit) {
