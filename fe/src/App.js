@@ -4,6 +4,7 @@ import Home from './components/Home';
 import Audit from './components/Audit';
 import './index.css';
 
+
 function App() {
   return (
     <Router>
@@ -11,6 +12,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/audit" element={<Audit />} />
+          <Route path="/coming-soon" element={<ComingSoon />} /> {/* Aggiungi la nuova rotta */}
         </Routes>
       </div>
     </Router>

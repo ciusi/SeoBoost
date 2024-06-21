@@ -37,67 +37,69 @@ const RegistrationModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="absolute inset-0 bg-gray-900 opacity-50"></div>
-      <div className="bg-white p-6 rounded shadow-lg relative z-10 w-full max-w-md mx-auto">
-        <h2 className="text-2xl font-bold mb-4">Benvenuto su PageSpeed Audit</h2>
-        <p className="mb-4">Registrati o accedi per utilizzare il nostro strumento di audit della velocità delle pagine.</p>
-        {error && <p className="text-red-500">{error}</p>}
-        <form onSubmit={handleSubmit}>
-          {!isLogin && (
-            <div className="mb-4">
-              <label className="block text-gray-700">Nome</label>
+    <div className="modal-overlay">
+      <div className="modal-container">
+        <div className="modal-content">
+          <button className="close-button" onClick={onClose}>&times;</button>
+          <h2 className="modal-title">Benvenuto su PageSpeed Audit</h2>
+          <p className="modal-description">Registrati o accedi per utilizzare il nostro strumento di audit della velocità delle pagine.</p>
+          {error && <p className="error-message">{error}</p>}
+          <form onSubmit={handleSubmit}>
+            {!isLogin && (
+              <div className="form-group">
+                <label className="form-label">Nome</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="form-input"
+                  required
+                />
+              </div>
+            )}
+            <div className="form-group">
+              <label className="form-label">Email</label>
               <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 block w-full border-gray-300 rounded shadow-sm"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="form-input"
                 required
               />
             </div>
-          )}
-          <div className="mb-4">
-            <label className="block text-gray-700">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full border-gray-300 rounded shadow-sm"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full border-gray-300 rounded shadow-sm"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700">
+            <div className="form-group">
+              <label className="form-label">Password</label>
               <input
-                type="checkbox"
-                checked={privacyChecked}
-                onChange={(e) => setPrivacyChecked(e.target.checked)}
-                className="mr-2 leading-tight"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="form-input"
+                required
               />
-              Accetto la politica sulla privacy
-            </label>
-          </div>
-          <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded">
-            {isLogin ? 'Accedi' : 'Registrati'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsLogin(!isLogin)}
-            className="ml-4 text-blue-500"
-          >
-            {isLogin ? 'Crea un nuovo account' : 'Hai già un account? Accedi'}
-          </button>
-        </form>
+            </div>
+            <div className="form-group">
+              <label className="form-label">
+                <input
+                  type="checkbox"
+                  checked={privacyChecked}
+                  onChange={(e) => setPrivacyChecked(e.target.checked)}
+                  className="form-checkbox"
+                />
+                Accetto la politica sulla privacy
+              </label>
+            </div>
+            <button type="submit" className="submit-button">
+              {isLogin ? 'Accedi' : 'Registrati'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsLogin(!isLogin)}
+              className="toggle-button"
+            >
+              {isLogin ? 'Crea un nuovo account' : 'Hai già un account? Accedi'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
