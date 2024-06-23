@@ -62,7 +62,8 @@ const RegistrationModal = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto relative">
-        <button className="absolute top-2 right-2 text-xl" onClick={onClose}>&times;</button>
+        {/* Rimuovi il pulsante di chiusura */}
+        {/* <button className="absolute top-2 right-2 text-xl" onClick={onClose}>&times;</button> */}
         <div className="text-center mb-4">
           <img src="/logoseoboost.png" alt="SeoBoost Logo" className="mx-auto h-12" />
         </div>

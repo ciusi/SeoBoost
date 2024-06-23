@@ -1,3 +1,4 @@
+// Navbar.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -5,9 +6,9 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="container">
-        <div className="navbar-content">
+        <div className="navbar-content flex flex-col md:flex-row">
           <img src="/logoseoboost.png" alt="Logo" className="logo" />
-          <div className="navbar-links">
+          <div className="navbar-links flex flex-col md:flex-row">
             <Link to="/guida">Guida all'Uso</Link>
             <Link to="/cookie">Cookie</Link>
             <Link to="/privacy">Privacy</Link>

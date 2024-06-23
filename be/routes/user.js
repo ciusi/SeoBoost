@@ -1,16 +1,17 @@
 const express = require('express');
+const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const { check, validationResult } = require('express-validator');
-const router = express.Router();
 const User = require('../models/User');
 const keys = require('../config/keys');
 const createTransporter = require('../config/emailTransporter');
+const crypto = require('crypto');
 
 // Funzione per inviare email di conferma
 const sendConfirmationEmail = async (email, token) => {
-  const url = `http://localhost:5000/confirmation/${token}`;
+  const url = `http://localhost:3000/confirmation/${token}`;
 
   try {
     const transporter = await createTransporter();
@@ -33,6 +34,28 @@ const sendConfirmationEmail = async (email, token) => {
     console.error('Errore durante la creazione del trasportatore:', error);
   }
 };
+
+// Rotta per confermare la registrazione
+router.get('/confirmation/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const decoded = jwt.verify(token, keys.secretOrKey);
+    const user = await User.findById(decoded.user.id);
+
+    if (!user) {
+      return res.status(400).json({ msg: 'Utente non trovato' });
+    }
+
+    user.isConfirmed = true; // Campo per indicare che l'utente è confermato
+    await user.save();
+
+    // Reindirizza l'utente alla pagina di Audit
+    res.redirect('http://localhost:3000/audit');
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: 'Errore del server' });
+  }
+});
 
 // Registrazione utente
 router.post(
@@ -59,7 +82,8 @@ router.post(
       user = new User({
         name,
         email,
-        password
+        password,
+        isConfirmed: false // Inizialmente non confermato
       });
 
       const salt = await bcrypt.genSalt(10);
@@ -86,13 +110,92 @@ router.post(
   }
 );
 
+// Funzione per inviare email di reset password
+const sendResetPasswordEmail = async (email, token) => {
+  const url = `http://localhost:3000/reset-password/${token}`;
+
+  try {
+    const transporter = await createTransporter();
+
+    const mailOptions = {
+      from: `SeoBoost <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Resetta la tua password',
+      html: `Per favore resetta la tua password cliccando <a href="${url}">qui</a>.`
+    };
+
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error('Errore durante l\'invio dell\'email di reset password:', err);
+      } else {
+        console.log('Email di reset password inviata:', info.response);
+      }
+    });
+  } catch (error) {
+    console.error('Errore durante la creazione del trasportatore:', error);
+  }
+};
+
+// Rotta per richiedere il reset della password
+router.post('/reset-password/request-reset', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ msg: 'Utente non trovato' });
+    }
+
+    const token = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 ora
+
+    await user.save();
+
+    await sendResetPasswordEmail(email, token);
+
+    res.status(200).json({ msg: 'Email di recupero inviata' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Errore del server');
+  }
+});
+
+// Rotta per resettare la password
+router.post('/reset-password/reset', async (req, res) => {
+  const { token, password } = req.body;
+
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ msg: 'Token di reset password non valido o scaduto' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    res.status(200).json({ msg: 'Password reimpostata con successo' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Errore del server');
+  }
+});
+
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    // Reindirizza l'utente alla pagina audit dopo il login
+    // Reindirizza l'utente alla pagina di Audit
     res.redirect('http://localhost:3000/audit');
   }
 );

@@ -15,7 +15,7 @@ const ResetPassword = () => {
       setMessage(res.data.msg);
       navigate('/login');
     } catch (err) {
-      setMessage(err.response.data.msg);
+      setMessage(err.response?.data?.msg || 'Errore durante la reimpostazione della password.');
     }
   };
 
@@ -31,6 +31,7 @@ const ResetPassword = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="mt-1 block w-full border-gray-300 rounded shadow-sm"
+            required
           />
         </div>
         <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded">

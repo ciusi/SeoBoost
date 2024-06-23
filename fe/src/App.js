@@ -7,6 +7,8 @@ import Privacy from './components/Privacy';
 import Audit from './components/Audit';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
+import ComingSoon from './components/ComingSoon';
+import Confirmation from './components/Confirmation';
 import './index.css';
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
           <Route path="/audit" element={<Audit />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/coming-soon" element={<ComingSoon />} />
+          <Route path="/confirmation/:token" element={<Confirmation />} />
         </Routes>
       </div>
     </Router>

@@ -11,7 +11,7 @@ const ForgotPassword = () => {
       const res = await axios.post('/api/reset-password/request-reset', { email });
       setMessage(res.data.msg);
     } catch (err) {
-      setMessage(err.response.data.msg);
+      setMessage(err.response?.data?.msg || 'Errore durante l\'invio della richiesta.');
     }
   };
 
@@ -27,6 +27,7 @@ const ForgotPassword = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="mt-1 block w-full border-gray-300 rounded shadow-sm"
+            required
           />
         </div>
         <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded">

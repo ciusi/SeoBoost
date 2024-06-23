@@ -18,6 +18,10 @@ const UserSchema = new mongoose.Schema({
   },
   googleId: {
     type: String
+  },
+  isConfirmed: {
+    type: Boolean,
+    default: false
   }
 });
 
