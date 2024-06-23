@@ -12,7 +12,9 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    required: function() {
+      return !this.googleId;  // Rende la password facoltativa se googleId è presente
+    }
   },
   googleId: {
     type: String

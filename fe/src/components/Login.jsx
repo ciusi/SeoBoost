@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -54,6 +54,11 @@ function Login() {
         >
           Login with Google
         </button>
+        <div className="mt-4">
+          <Link to="/forgot-password" className="text-blue-500 hover:underline">
+            Password dimenticata?
+          </Link>
+        </div>
       </form>
     </div>
   );

@@ -1,9 +1,10 @@
+const passport = require('passport');
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const mongoose = require('mongoose');
-const User = require('../models/User');  
-const keys = require('./keys');  // Google Keys
+const User = require('../models/User');
+const keys = require('./keys');
 
 const opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
@@ -28,7 +29,7 @@ module.exports = (passport) => {
       {
         clientID: keys.googleClientID,
         clientSecret: keys.googleClientSecret,
-        callbackURL: "/api/users/google/callback"
+        callbackURL: "http://localhost:5000/api/users/google/callback"
       },
       (token, tokenSecret, profile, done) => {
         User.findOne({ googleId: profile.id }).then((existingUser) => {
@@ -47,4 +48,12 @@ module.exports = (passport) => {
       }
     )
   );
+
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
+
+  passport.deserializeUser((id, done) => {
+    User.findById(id, (err, user) => done(err, user));
+  });
 };

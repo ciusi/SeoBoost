@@ -9,7 +9,7 @@ const Privacy = () => {
       <div className="container mt-4">
         <h1>Privacy Policy</h1>
         <p>
-          Qui puoi inserire la tua privacy policy. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla accumsan, metus ultrices eleifend gravida, nulla nunc varius lectus, nec rutrum justo nibh eu lectus. Ut vulputate semper dui. Fusce erat odio, sollicitudin vel erat vel, interdum mattis neque.
+          Ricordati di scrivere la privacy policy. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla accumsan, metus ultrices eleifend gravida, nulla nunc varius lectus, nec rutrum justo nibh eu lectus. Ut vulputate semper dui. Fusce erat odio, sollicitudin vel erat vel, interdum mattis neque.
         </p>
       </div>
       <Footer />

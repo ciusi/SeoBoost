@@ -3,27 +3,35 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const { check, validationResult } = require('express-validator');
-const nodemailer = require('nodemailer');
 const router = express.Router();
 const User = require('../models/User');
 const keys = require('../config/keys');
+const createTransporter = require('../config/emailTransporter');
 
-// Trasporto per invio email
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
-
-const sendConfirmationEmail = (email, token) => {
+// Funzione per inviare email di conferma
+const sendConfirmationEmail = async (email, token) => {
   const url = `http://localhost:5000/confirmation/${token}`;
-  transporter.sendMail({
-    to: email,
-    subject: 'Conferma la tua registrazione',
-    html: `Per favore conferma la tua registrazione cliccando <a href="${url}">qui</a>.`
-  });
+
+  try {
+    const transporter = await createTransporter();
+
+    const mailOptions = {
+      from: `SeoBoost <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Conferma la tua registrazione',
+      html: `Per favore conferma la tua registrazione cliccando <a href="${url}">qui</a>.`
+    };
+
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error('Errore durante l\'invio dell\'email di conferma:', err);
+      } else {
+        console.log('Email di conferma inviata:', info.response);
+      }
+    });
+  } catch (error) {
+    console.error('Errore durante la creazione del trasportatore:', error);
+  }
 };
 
 // Registrazione utente
@@ -68,7 +76,7 @@ router.post(
       const token = jwt.sign(payload, keys.secretOrKey, { expiresIn: '1h' });
 
       // Invia email di conferma
-      sendConfirmationEmail(email, token);
+      await sendConfirmationEmail(email, token);
 
       res.json({ token });
     } catch (err) {
@@ -78,64 +86,14 @@ router.post(
   }
 );
 
-// Login utente
-router.post(
-  '/login',
-  [
-    check('email', 'Please include a valid email').isEmail(),
-    check('password', 'Password is required').exists()
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { email, password } = req.body;
-
-    try {
-      const user = await User.findOne({ email });
-      if (!user) {
-        return res.status(400).json({ msg: 'Invalid Credentials' });
-      }
-
-      const isMatch = await bcrypt.compare(password, user.password);
-
-      if (!isMatch) {
-        return res.status(400).json({ msg: 'Invalid Credentials' });
-      }
-
-      const payload = {
-        user: {
-          id: user.id
-        }
-      };
-
-      jwt.sign(
-        payload,
-        keys.secretOrKey,
-        { expiresIn: 3600 },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token });
-        }
-      );
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
-    }
-  }
-);
-
-// Autenticazione con Google
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    // Successful authentication -> redirect home.
-    res.redirect('/dashboard');
+    // Reindirizza l'utente alla pagina audit dopo il login
+    res.redirect('http://localhost:3000/audit');
   }
 );
 

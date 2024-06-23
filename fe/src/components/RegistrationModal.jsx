@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import zxcvbn from 'zxcvbn';
 
 const RegistrationModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -24,6 +25,13 @@ const RegistrationModal = ({ isOpen, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    const passwordStrength = zxcvbn(formData.password);
+    if (!formData.isLogin && passwordStrength.score < 3) {
+      setError('La password è troppo debole. Usa una combinazione di lettere, numeri e simboli.');
+      return;
+    }
+
     if (!formData.privacyChecked) {
       setError('Devi accettare la politica sulla privacy.');
       return;
@@ -37,6 +45,7 @@ const RegistrationModal = ({ isOpen, onClose }) => {
         password: formData.password,
       });
       localStorage.setItem('token', response.data.token);
+      alert('Registrazione avvenuta con successo! Controlla la tua email per la conferma.');
       onClose();
       navigate('/audit');
     } catch (err) {
@@ -44,11 +53,15 @@ const RegistrationModal = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = 'http://localhost:5000/api/users/google';
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto">
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto relative">
         <button className="absolute top-2 right-2 text-xl" onClick={onClose}>&times;</button>
         <div className="text-center mb-4">
           <img src="/logoseoboost.png" alt="SeoBoost Logo" className="mx-auto h-12" />
@@ -104,16 +117,23 @@ const RegistrationModal = ({ isOpen, onClose }) => {
               Accetto la <a href="/privacy" className="text-blue-500 hover:underline">politica sulla privacy</a> e i <a href="/cookie" className="text-blue-500 hover:underline">cookie</a>
             </label>
           </div>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col space-y-2 mt-4">
             <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded transition ease-in-out duration-300 hover:bg-blue-600">
               {formData.isLogin ? 'Accedi' : 'Registrati'}
             </button>
             <button
               type="button"
               onClick={() => setFormData({ ...formData, isLogin: !formData.isLogin })}
-              className="text-blue-500 hover:underline"
+              className="bg-gray-500 text-white px-4 py-2 rounded transition ease-in-out duration-300 hover:bg-gray-600"
             >
               {formData.isLogin ? 'Crea un nuovo account' : 'Hai già un account? Accedi'}
+            </button>
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="bg-red-500 text-white px-4 py-2 rounded transition ease-in-out duration-300 hover:bg-red-600"
+            >
+              {formData.isLogin ? 'Accedi con Google' : 'Registrati con Google'}
             </button>
           </div>
         </form>

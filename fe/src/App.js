@@ -4,8 +4,10 @@ import Home from './components/Home';
 import Guida from './components/Guida';
 import Cookie from './components/Cookie';
 import Privacy from './components/Privacy';
-import Audit from './components/Audit'; // Assicurati che il percorso sia corretto
-import './index.css'; // CSS
+import Audit from './components/Audit';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
+import './index.css';
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
           <Route path="/cookie" element={<Cookie />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/audit" element={<Audit />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Routes>
       </div>
     </Router>
