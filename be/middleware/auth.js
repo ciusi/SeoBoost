@@ -3,8 +3,6 @@ const keys = require('../config/keys');
 
 module.exports = function (req, res, next) {
   const token = req.header('Authorization');
-  console.log('Received Token:', token);
-
   if (!token) {
     return res.status(401).json({ msg: 'No token, authorization denied' });
   }
@@ -14,7 +12,6 @@ module.exports = function (req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
-    console.error('Token verification failed:', err.message);
     if (err.name === 'TokenExpiredError') {
       return res.status(401).json({ msg: 'Token expired' });
     }

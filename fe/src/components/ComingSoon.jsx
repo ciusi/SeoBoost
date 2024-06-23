@@ -1,12 +1,21 @@
 import React from 'react';
+import Navbar from './Navbar';
+import Footer from './Footer';
 
-function ComingSoon() {
+const CoomingSoon = () => {
   return (
-    <div className="coming-soon">
-      <h1>Coming Soon</h1>
-      <p>Per info contattare info@silviaciuffetelli.it</p>
+    <div>
+      <Navbar />
+      <div className="container mt-4">
+        <h1>Cooming Soon!</h1>
+        <p>
+           Per informazioni: 
+           capstoneciuffetelli@gmail.com
+        </p>
+      </div>
+      <Footer />
     </div>
   );
-}
+};
 
-export default ComingSoon;
+export default Cookie;

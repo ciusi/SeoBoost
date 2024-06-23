@@ -4,7 +4,7 @@ const Audit = require('../models/Audit');
 const axios = require('axios');
 const { check, validationResult } = require('express-validator');
 
-// Funzione per pulire le chiavi degli oggetti 
+// Funzione per pulire le chiavi degli oggetti
 const cleanKeys = (obj) => {
   if (typeof obj !== 'object' || obj === null) return obj;
   if (Array.isArray(obj)) return obj.map(cleanKeys);

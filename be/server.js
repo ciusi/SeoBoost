@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 const passport = require('passport');
@@ -13,6 +14,9 @@ const app = express();
 
 // Middleware per parsing dati JSON
 app.use(express.json());
+
+// Abilita CORS per tutte le richieste
+app.use(cors());
 
 // Inizializzazione Passport
 app.use(passport.initialize());
