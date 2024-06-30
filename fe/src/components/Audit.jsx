@@ -9,7 +9,8 @@ import FirstInputDelay from './AuditResults/FirstInputDelay';
 import TimeToInteractive from './AuditResults/TimeToInteractive';
 import TotalBlockingTime from './AuditResults/TotalBlockingTime';
 import SpeedIndex from './AuditResults/SpeedIndex';
-import Loader from './Loader';
+import SeoInResults from './/SeoinResults/SeoInResults';
+
 
 const Audit = () => {
   const [url, setUrl] = useState('');
@@ -19,60 +20,84 @@ const Audit = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);  // Mostra il loader
+    setLoading(true);
+    setError(null);
+    console.log('Submitting URL:', url);
     try {
-      const response = await axios.post('http://localhost:5000/api/audits', { url }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const response = await axios.post(
+        'http://localhost:5000/api/audits',
+        { url },
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true // Permette l'invio di cookie con la richiesta
         }
-      });
+      );
+      console.log('API Response:', response.data);
       setResults(response.data);
-      setError(null);
     } catch (err) {
+      console.error('Error fetching audit results:', err);
       setError(`Error fetching audit results: ${err.response ? err.response.data : err.message}`);
     } finally {
-      setLoading(false);  // Nascondi il loader
+      setLoading(false);
     }
   };
 
-  const renderResults = () => {
+  const renderPageSpeedResults = () => {
     if (loading) {
-      return <Loader />;  // Mostra il loader se i dati sono in caricamento
+      return <p>Loading...</p>;
     }
 
-    if (!results || !results.lighthouseResult || !results.lighthouseResult.audits) {
+    if (!results || !results.results || !results.results.lighthouseResult || !results.results.lighthouseResult.audits) {
       return <p>No results found.</p>;
     }
 
-    const { audits } = results.lighthouseResult;
+    const { audits } = results.results.lighthouseResult;
 
     const getAuditValue = (id) => {
       const audit = audits[id];
+      console.log(`Audit value for ${id}:`, audit ? audit.numericValue : 'Not found');
       return audit ? audit.numericValue : null;
     };
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {getAuditValue('largest-contentful-paint') !== null && (
-          <LargestContentfulPaint score={getAuditValue('largest-contentful-paint') / 1000} />
+          <div className="card">
+            <LargestContentfulPaint score={getAuditValue('largest-contentful-paint') / 1000} />
+          </div>
         )}
         {getAuditValue('first-contentful-paint') !== null && (
-          <FirstContentfulPaint score={getAuditValue('first-contentful-paint') / 1000} />
+          <div className="card">
+            <FirstContentfulPaint score={getAuditValue('first-contentful-paint') / 1000} />
+          </div>
         )}
         {getAuditValue('cumulative-layout-shift') !== null && (
-          <CumulativeLayoutShift score={getAuditValue('cumulative-layout-shift')} />
+          <div className="card">
+            <CumulativeLayoutShift score={getAuditValue('cumulative-layout-shift')} />
+          </div>
         )}
         {getAuditValue('first-input-delay') !== null && (
-          <FirstInputDelay score={getAuditValue('first-input-delay')} />
+          <div className="card">
+            <FirstInputDelay score={getAuditValue('first-input-delay')} />
+          </div>
         )}
         {getAuditValue('interactive') !== null && (
-          <TimeToInteractive score={getAuditValue('interactive') / 1000} />
+          <div className="card">
+            <TimeToInteractive score={getAuditValue('interactive') / 1000} />
+          </div>
         )}
         {getAuditValue('total-blocking-time') !== null && (
-          <TotalBlockingTime score={getAuditValue('total-blocking-time')} />
+          <div className="card">
+            <TotalBlockingTime score={getAuditValue('total-blocking-time')} />
+          </div>
         )}
         {getAuditValue('speed-index') !== null && (
-          <SpeedIndex score={getAuditValue('speed-index') / 1000} />
+          <div className="card">
+            <SpeedIndex score={getAuditValue('speed-index') / 1000} />
+          </div>
         )}
       </div>
     );
@@ -83,21 +108,38 @@ const Audit = () => {
       <Navbar />
       <div className="container mt-4">
         <h1 className="text-3xl font-bold mb-4">Analizza il tuo sito web</h1>
-        <form onSubmit={handleSubmit} className="audit-form mb-4">
-          <div>
-            <label htmlFor="url" className="block text-lg mb-2">URL</label>
-            <input
-              type="text"
-              id="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded mb-4"
-            />
-          </div>
-          <button type="submit" className="bg-main text-white px-4 py-2 rounded hover:bg-main-dark transition">Avvia Audit</button>
-        </form>
-        {error && <p className="text-red-500">{error}</p>}
-        {renderResults()}
+
+        <div className="section">
+          <h2 className="text-2xl font-semibold mb-4">1) Analizza i Core Vitals con PageSpeed Insights</h2>
+          <form onSubmit={handleSubmit} className="audit-form mb-4">
+            <div>
+              <label htmlFor="url" className="block text-lg mb-2">URL</label>
+              <input
+                type="text"
+                id="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded mb-4"
+              />
+            </div>
+            <button type="submit" className="bg-main text-white px-4 py-2 rounded hover:bg-main-dark transition">Avvia Audit</button>
+          </form>
+          {error && <p className="text-red-500">{error}</p>}
+          {renderPageSpeedResults()}
+        </div>
+
+        <div className="section">
+          <h2 className="text-2xl font-semibold mb-4">2) Analizza la SEO in-page</h2>
+          {results && (
+    <SeoInResults seoData={results.results.seoIn} />
+  )}
+        
+        </div>
+
+        <div className="section">
+          <h2 className="text-2xl font-semibold mb-4">3) Analizza i touch point online del tuo sito web</h2>
+          <p>Funzionalità in fase di sviluppo...</p>
+        </div>
       </div>
       <Footer />
     </div>

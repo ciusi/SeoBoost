@@ -1,6 +1,5 @@
 module.exports = {
   purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
-  darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {
       colors: {
@@ -20,9 +19,6 @@ module.exports = {
           '0%, 100%': { opacity: 0 },
           '33%': { opacity: 1 },
         },
-      },
-      animation: {
-        loader: 'loader 3s infinite',
       },
     },
   },

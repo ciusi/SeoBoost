@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Audit = require('../models/Audit');
-const axios = require('axios');
+const { google } = require('googleapis');
 const { check, validationResult } = require('express-validator');
 
 // Funzione per pulire le chiavi degli oggetti
@@ -14,6 +14,13 @@ const cleanKeys = (obj) => {
     return acc;
   }, {});
 };
+
+// Configurazione della chiave API
+const apiKey = process.env.GOOGLE_API_KEY;
+const pagespeedonline = google.pagespeedonline({
+  version: 'v5',
+  auth: apiKey,
+});
 
 router.post(
   '/',
@@ -28,14 +35,15 @@ router.post(
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       url = 'http://' + url;
     }
-    const apiKey = process.env.PAGESPEED_API_KEY;
-    const apiEndpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}`;
 
     try {
       console.log('Received URL:', url);
-      console.log('API Endpoint:', apiEndpoint);
 
-      const apiResponse = await axios.get(apiEndpoint);
+      const apiResponse = await pagespeedonline.pagespeedapi.runpagespeed({
+        url,
+        strategy: 'desktop',
+      });
+
       console.log('API Response:', apiResponse.data);
 
       const cleanedResults = cleanKeys(apiResponse.data);

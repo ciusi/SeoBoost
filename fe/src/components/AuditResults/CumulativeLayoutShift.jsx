@@ -19,7 +19,7 @@ const CumulativeLayoutShift = ({ score }) => {
     <div className="bg-white shadow-md rounded-lg p-4 mb-4">
       <h2 className="text-xl font-bold">Cumulative Layout Shift (CLS)</h2>
       <p>Il Cumulative Layout Shift (CLS) misura la stabilità visiva della tua pagina durante il caricamento. Un basso valore di CLS indica che gli elementi della pagina non si spostano inaspettatamente.</p>
-      <p className={messageClass}>{message}</p>
+      <p className={`mt-2 ${messageClass}`}>{message}</p>
     </div>
   );
 };

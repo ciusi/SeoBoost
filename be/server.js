@@ -16,8 +16,17 @@ const app = express();
 // Middleware per parsing dati JSON
 app.use(express.json());
 
-// Abilita CORS per tutte le richieste
-app.use(cors());
+// Configurazione delle opzioni CORS
+const corsOptions = {
+  origin: 'http://localhost:3000', // URL del frontend
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: ['Authorization', 'Content-Type'],
+  credentials: true, // Permette di inviare cookie
+  optionsSuccessStatus: 204 // Per browser (Chrome) per evitare problemi con il preflight
+};
+
+// Abilita CORS per tutte le richieste usando le opzioni configurate
+app.use(cors(corsOptions));
 
 // Configura express-session
 app.use(session({

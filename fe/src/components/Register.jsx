@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import zxcvbn from 'zxcvbn';
 
-const RegistrationModal = ({ isOpen, onClose }) => {
+function Register() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -40,60 +40,54 @@ const RegistrationModal = ({ isOpen, onClose }) => {
       const response = await axios.post('/api/users/register', formData);
       localStorage.setItem('token', response.data.token);
       alert('Registrazione avvenuta con successo! Controlla la tua email per la conferma.');
-      onClose();
       navigate('/audit');
     } catch (err) {
       setError(err.response?.data?.msg || 'Errore durante la registrazione');
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto relative">
-        <button className="absolute top-2 right-2 text-xl" onClick={onClose}>&times;</button>
-        <div className="text-center mb-4">
-          <img src="/logoseoboost.png" alt="SeoBoost Logo" className="mx-auto h-12" />
-        </div>
-        <h2 className="text-2xl font-bold mb-2">Vuoi scoprire come migliorare le performance del tuo sito web in pochi istanti?</h2>
-        <p className="text-gray-600 mb-4">Iscriviti e inizia subito ad usare SeoBoost gratuitamente!</p>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="form-group">
-            <label className="block mb-1">Nome</label>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="bg-white p-6 rounded shadow-md w-full max-w-sm text-center">
+        <img src="/logoseoboost.png" alt="SeoBoost Logo" className="mx-auto mb-4 h-12" />
+        <h2 className="text-2xl font-bold mb-4">Benvenuto su SeoBoost</h2>
+        <p className="mb-4">Registrati per eseguire SEO audit gratuite e migliorare le performance del tuo sito web.</p>
+        <form onSubmit={handleSubmit}>
+          {error && <p className="text-red-500">{error}</p>}
+          <div className="mb-4 text-left">
+            <label className="block text-gray-700">Nome</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="mt-1 block w-full border-gray-300 rounded shadow-sm"
               required
             />
           </div>
-          <div className="form-group">
-            <label className="block mb-1">Email</label>
+          <div className="mb-4 text-left">
+            <label className="block text-gray-700">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="mt-1 block w-full border-gray-300 rounded shadow-sm"
               required
             />
           </div>
-          <div className="form-group">
-            <label className="block mb-1">Password</label>
+          <div className="mb-4 text-left">
+            <label className="block text-gray-700">Password</label>
             <input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="mt-1 block w-full border-gray-300 rounded shadow-sm"
               required
             />
           </div>
-          <div className="form-group flex items-center">
+          <div className="mb-4 flex items-center text-left">
             <input
               type="checkbox"
               name="privacyChecked"
@@ -105,11 +99,11 @@ const RegistrationModal = ({ isOpen, onClose }) => {
               Accetto la <Link to="/privacy" className="text-blue-500 hover:underline">politica sulla privacy</Link> e i <Link to="/cookie" className="text-blue-500 hover:underline">cookie</Link>
             </label>
           </div>
-          <div className="flex flex-col space-y-2 mt-4">
-            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded transition ease-in-out duration-300 hover:bg-blue-600">
-              Registrati
-            </button>
-            <Link to="/login" className="bg-gray-500 text-white px-4 py-2 rounded transition ease-in-out duration-300 hover:bg-gray-600 text-center">
+          <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded w-full mb-4">
+            Registrati
+          </button>
+          <div className="mt-4">
+            <Link to="/login" className="text-blue-500 hover:underline">
               Hai già un account? Accedi
             </Link>
           </div>
@@ -117,6 +111,6 @@ const RegistrationModal = ({ isOpen, onClose }) => {
       </div>
     </div>
   );
-};
+}
 
-export default RegistrationModal;
+export default Register;
